@@ -106,6 +106,12 @@ func (r *ReverseProxy) getUserFromAuthEmail(req *http.Request) *user_model.User 
 // and failing that it will attempt to load it based on the email (see docs for getUserFromAuthEmail).
 // Returns nil if the headers are empty or the user is not found.
 func (r *ReverseProxy) Verify(req *http.Request, w http.ResponseWriter, store DataStore, sess SessionStore) (*user_model.User, error) {
+	if setting.ReverseProxyAuthJwt {
+		jwt := strings.TrimPrefix("Bearer ", strings.TrimSpace(req.Header.Get(setting.ReverseProxyAuthJwtHeader)))
+		if jwt == "" {
+			return nil, nil //nolint:nilnil // the auth method is not applicable
+		}
+	}
 	user, err := r.getUserFromAuthUser(req)
 	if err != nil {
 		return nil, err
